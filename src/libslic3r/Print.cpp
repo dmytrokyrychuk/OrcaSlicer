@@ -819,8 +819,7 @@ StringObjectException Print::sequential_print_clearance_valid(const Print &print
         for (int k = 0; k < print_instance_count; k++)
         {
             auto inst = print_instance_with_bounding_box[k].print_instance;
-            // 只需要考虑喷嘴到滑杆的偏移量，这个比整个工具头的碰撞半径要小得多
-            // Only the offset from the nozzle to the slide bar needs to be considered, which is much smaller than the collision radius of the entire tool head.
+            // TODO: Instead of the whole bbox, only the sections of the object that exceed extruder_clearance_height_to_rod need to be considered.
             auto bbox = print_instance_with_bounding_box[k].bounding_box.inflated(-scale_(0.5 * print.config().extruder_clearance_radius.value + object_skirt_offset));
             auto iy1 = bbox.min.y();
             auto iy2 = bbox.max.y();
@@ -840,12 +839,29 @@ StringObjectException Print::sequential_print_clearance_valid(const Print &print
             for (int i = k+1; i < print_instance_count; i++)
             {
                 auto& p = print_instance_with_bounding_box[i].print_instance;
+                // TODO: move rod distance params to the printer profile
+                float tool_head_rod_distance_back = 15.0f; // distance from the rod to the back of the tool head
+                float tool_head_rod_distance_front = 47.0f; // distance from the rod to the front of the tool head
                 auto bbox2 = print_instance_with_bounding_box[i].bounding_box;
-                auto py1 = bbox2.min.y();
-                auto py2 = bbox2.max.y();
+                // bbox2 is bigger than it needs to be because it is inflated by the extruder_clearance_radius. We
+                // shrink the intersection range by the measured distance to the rod, but we do not account for the real
+                // distance between the nozzle and the front and the back of the tool head. If we knew the nozzle
+                // distance, we would be able to estimate the rod's position more accurately.
+                // Assuming that the rod is located within the tool head, the distance from the nozzle to the rod must
+                // be less than the tool head clearance radius. Therefore, it is safe to shrink the intersection range
+                // by the real rod distance.
+                // FIXME: The range shrinkage calculation can be improved if the distance between the rod and the nozzle
+                // is measured instead of the distance to the front of the tool head. Then we can shrink py1 by
+                // rod->nozzle distance + extruder_clearance_radius. But then we need to add some kind of margin in case
+                // there supports are generated outside of the printed object.
+                auto py1 = bbox2.min.y() + tool_head_rod_distance_front;
+                auto py2 = bbox2.max.y() - tool_head_rod_distance_back;
                 auto inter_min = std::max(iy1, py1); // min y of intersection
                 auto inter_max = std::min(iy2, py2); // max y of intersection. length=max_y-min_y>0 means intersection exists
                 if (inter_max - inter_min > 0) {
+                    // We set the maximum allowed height for `inst` to extruder_clearance_height_to_rod here. If `inst`
+                    // is higher than extruder_clearance_height_to_rod, and `p` overlaps `inst` over the y axis, then
+                    // the printer's rod may collide with `inst` while `p` is printed. The user will be warned about this.
                     height = hc2;
                     break;
                 }

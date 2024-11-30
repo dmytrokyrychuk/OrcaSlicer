@@ -854,8 +854,8 @@ StringObjectException Print::sequential_print_clearance_valid(const Print &print
                 // is measured instead of the distance to the front of the tool head. Then we can shrink py1 by
                 // rod->nozzle distance + extruder_clearance_radius. But then we need to add some kind of margin in case
                 // there supports are generated outside of the printed object.
-                auto py1 = bbox2.min.y() + tool_head_rod_distance_front;
-                auto py2 = bbox2.max.y() - tool_head_rod_distance_back;
+                float py1 = bbox2.min.y() + tool_head_rod_distance_front;
+                float py2 = bbox2.max.y() - tool_head_rod_distance_back;
                 auto inter_min = std::max(iy1, py1); // min y of intersection
                 auto inter_max = std::min(iy2, py2); // max y of intersection. length=max_y-min_y>0 means intersection exists
                 if (inter_max - inter_min > 0) {

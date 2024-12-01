@@ -850,10 +850,10 @@ StringObjectException Print::sequential_print_clearance_valid(const Print &print
                 // Assuming that the rod is located within the tool head, the distance from the nozzle to the rod must
                 // be less than the tool head clearance radius. Therefore, it is safe to shrink the intersection range
                 // by the real rod distance.
-                float py1 = bbox2.min.y();
-                float py2 = bbox2.max.y();
-                auto inter_min = std::max(iy1, py1 + tool_head_rod_distance_front); // min y of intersection
-                auto inter_max = std::min(iy2, py2 - tool_head_rod_distance_back); // max y of intersection. length=max_y-min_y>0 means intersection exists
+                auto py1 = bbox2.min.y();
+                auto py2 = bbox2.max.y();
+                auto inter_min = std::max(iy1, py1); // min y of intersection
+                auto inter_max = std::min(iy2, py2); // max y of intersection. length=max_y-min_y>0 means intersection exists
                 if (inter_max - inter_min > 0) {
                     // We set the maximum allowed height for `inst` to extruder_clearance_height_to_rod here. If `inst`
                     // is higher than extruder_clearance_height_to_rod, and `p` overlaps `inst` over the y axis, then

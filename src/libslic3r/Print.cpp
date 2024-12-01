@@ -850,10 +850,6 @@ StringObjectException Print::sequential_print_clearance_valid(const Print &print
                 // Assuming that the rod is located within the tool head, the distance from the nozzle to the rod must
                 // be less than the tool head clearance radius. Therefore, it is safe to shrink the intersection range
                 // by the real rod distance.
-                // FIXME: The range shrinkage calculation can be improved if the distance between the rod and the nozzle
-                // is measured instead of the distance to the front of the tool head. Then we can shrink py1 by
-                // rod->nozzle distance + extruder_clearance_radius. But then we need to add some kind of margin in case
-                // there supports are generated outside of the printed object.
                 float py1 = bbox2.min.y() + tool_head_rod_distance_front;
                 float py2 = bbox2.max.y() - tool_head_rod_distance_back;
                 auto inter_min = std::max(iy1, py1); // min y of intersection

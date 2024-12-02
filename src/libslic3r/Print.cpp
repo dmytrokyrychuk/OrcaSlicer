@@ -816,8 +816,8 @@ StringObjectException Print::sequential_print_clearance_valid(const Print &print
         // if objects are not overlapped on y-axis, they will not collide even if they are taller than extruder_clearance_height_to_rod
         int print_instance_count = print_instance_with_bounding_box.size();
         // TODO: move rod distance params to the printer profile
-        float tool_head_rod_distance_back = 15.0; // distance from the rod to the back of the tool head
-        float tool_head_rod_distance_front = 47.0; // distance from the rod to the front of the tool head
+        double tool_head_rod_distance_back = 15.0; // distance from the rod to the back of the tool head
+        double tool_head_rod_distance_front = 47.0; // distance from the rod to the front of the tool head
         std::map<const PrintInstance*, std::pair<Polygon, float>> too_tall_instances;
         for (int k = 0; k < print_instance_count; k++)
         {
@@ -852,8 +852,8 @@ StringObjectException Print::sequential_print_clearance_valid(const Print &print
                 // by the real rod distance.
                 auto py1 = bbox2.min.y();
                 auto py2 = bbox2.max.y();
-                auto inter_min = std::max(iy1, py1); // min y of intersection
-                auto inter_max = std::min(iy2, py2); // max y of intersection. length=max_y-min_y>0 means intersection exists
+                auto inter_min = std::max(iy1, py1 + tool_head_rod_distance_front); // min y of intersection
+                auto inter_max = std::min(iy2, py2 - tool_head_rod_distance_back); // max y of intersection. length=max_y-min_y>0 means intersection exists
                 if (inter_max - inter_min > 0) {
                     // We set the maximum allowed height for `inst` to extruder_clearance_height_to_rod here. If `inst`
                     // is higher than extruder_clearance_height_to_rod, and `p` overlaps `inst` over the y axis, then
